@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OSCE-Rotationsplan</title>
+<style>
+  :root {
+    --accent: #2C4A6E;
+    --accent-hover: #1e3a57;
+    --accent-light: #e8eef5;
+    --border: #cbd5e1;
+    --border-light: #e2e8f0;
+    --bg: #ffffff;
+    --muted: #f1f5f9;
+    --text: #1e293b;
+    --subtle: #6b7280;
+    --success: #2C4A6E;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,.06);
+    --shadow-md: 0 2px 8px rgba(0,0,0,.09);
+    --radius: 10px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; background: var(--bg); color: var(--text); font-size: 15px; line-height: 1.55; }
+
+  .top-bar { background: var(--bg); border-bottom: 1px solid var(--border-light); box-shadow: var(--shadow-sm); padding: 13px 0; position: sticky; top: 0; z-index: 100; }
+  .top-bar-inner { max-width: 980px; margin: 0 auto; padding: 0 18px; }
+  .top-bar h1 { font-size: 20px; font-weight: 800; letter-spacing: -.3px; line-height: 1.2; }
+  .top-bar .sub { font-size: 11px; font-weight: 500; color: var(--subtle); margin-top: 2px; letter-spacing: .3px; text-transform: uppercase; }
+
+  .container { max-width: 980px; margin: 0 auto; padding: 20px 18px; display: grid; grid-template-columns: 310px 1fr; gap: 18px; align-items: start; }
+  @media (max-width: 760px) { .container { grid-template-columns: 1fr; } }
+
+  .section { background: var(--muted); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 14px; box-shadow: var(--shadow-sm); }
+  .section-head { padding: 10px 16px; border-bottom: 1px solid var(--border-light); background: var(--bg); display: flex; align-items: center; gap: 10px; }
+  .section-head .n { width: 24px; height: 24px; border-radius: 6px; background: var(--accent); color: #fff; font-weight: 700; display: flex; align-items: center; justify-content: center; flex: 0 0 auto; font-size: 12px; }
+  .section-head h2 { font-size: 14px; font-weight: 700; }
+  .section-body { padding: 14px 16px; }
+
+  .field { margin-bottom: 12px; }
+  .row2 { display: flex; gap: 10px; }
+  .field.half { flex: 1; }
+  label { display: block; font-size: 12px; font-weight: 700; margin-bottom: 4px; color: var(--subtle); text-transform: uppercase; letter-spacing: .4px; }
+  input[type="text"], input[type="number"], input[type="time"], input[type="date"], textarea {
+    width: 100%; border: 1px solid var(--border); border-radius: 7px; padding: 8px 11px;
+    font-family: inherit; font-size: 14px; outline: none; background: var(--bg); color: var(--text);
+    transition: border-color .15s, box-shadow .15s;
+  }
+  textarea { min-height: 110px; resize: vertical; }
+  input:focus, textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(13,115,119,0.1); }
+
+  .hint-text { font-size: 12px; color: var(--subtle); margin-top: 5px; }
+  .student-badge { display: inline-flex; align-items: center; gap: 5px; background: var(--accent-light); color: var(--accent); font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 999px; margin-top: 7px; }
+
+  .btn-primary { display: flex; align-items: center; justify-content: center; gap: 6px; padding: 10px 18px; border-radius: 8px; font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer; border: none; background: var(--accent); color: #fff; width: 100%; margin-top: 4px; transition: all .15s; }
+  .btn-primary:hover { background: var(--accent-hover); box-shadow: var(--shadow-md); }
+  .btn-export { display: flex; align-items: center; justify-content: center; gap: 6px; padding: 10px 18px; border-radius: 8px; font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer; border: none; background: var(--accent); color: #fff; width: 100%; margin-top: 12px; transition: all .15s; }
+  .btn-export:hover { background: var(--accent-hover); box-shadow: var(--shadow-md); }
+  .btn-export:disabled { background: #94a3b8; cursor: not-allowed; box-shadow: none; }
+  .btn-export-sec { display: flex; align-items: center; justify-content: center; padding: 10px 18px; border-radius: 8px; font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer; border: 2px solid var(--accent); background: #fff; color: var(--accent); width: 100%; margin-top: 8px; transition: all .15s; }
+  .btn-export-sec:hover { background: var(--accent-light); }
+  .btn-export-sec:disabled { border-color: #94a3b8; color: #94a3b8; cursor: not-allowed; background: #fff; }
+
+  .export-status { text-align: center; font-size: 13px; color: var(--subtle); margin-top: 8px; min-height: 18px; }
+  .export-status.ok { color: var(--success); font-weight: 700; }
+  .export-status.err { color: #dc2626; }
+
+  .pt tr.pause-row td { background: #fff; padding: 5px 12px; border-bottom: 1px solid #f0f4f8; text-align: left; }
+  .pause-label { font-size: 12px; font-weight: 700; color: var(--subtle); }
+  .pause-time { font-size: 12px; color: var(--subtle); }
+  .pause-edit:focus { outline: none; border-color: var(--accent) !important; }
+  .meta-info { font-size: 12px; color: var(--subtle); margin-bottom: 12px; }
+  .meta-info strong { color: var(--text); font-size: 13px; }
+
+  /* VORSCHAU – ruhig, nur eine Farbe (teal) */
+  .preview-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 8px; }
+  table.pt { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 480px; }
+  .pt thead th { background: #2C4A6E; color: #fff; padding: 7px 8px; font-size: 11px; font-weight: 600; text-align: center; white-space: nowrap; border-right: 1px solid rgba(255,255,255,0.08); }
+  .pt thead th:first-child { text-align: left; padding-left: 12px; min-width: 150px; }
+  .pt thead th:nth-child(2) { min-width: 32px; }
+  .pt tbody td { padding: 5px 8px; border-bottom: 1px solid #f0f4f8; text-align: center; background: #fff; color: var(--text); white-space: nowrap; }
+  .pt tbody td:first-child { text-align: left; padding-left: 12px; }
+  .pt tbody tr:nth-child(even) td { background: #fafbfc; }
+  .pt tbody tr:not(.gh):hover td { background: #edf2f8; }
+  .pt tr.gh td { background: #f1f5f9; color: #2C4A6E; font-size: 11px; font-weight: 700; letter-spacing: .3px; padding: 5px 12px; border-top: 2px solid #2C4A6E; border-bottom: 1px solid var(--border); }
+  /* Stationsnummer: schlicht, teal-Zahl */
+  .sn { font-weight: 700; color: var(--accent); }
+
+  .empty-state { padding: 50px 20px; text-align: center; color: var(--subtle); }
+  .empty-state .icon { font-size: 36px; margin-bottom: 8px; }
+  @media print {
+    .top-bar, .container > div:first-child,
+    .btn-export, .btn-export-sec, .btn-primary,
+    #exportStatus { display: none !important; }
+    .container { display: block; }
+    .container > div:last-child { padding: 0; }
+    .section { box-shadow: none; border: none; padding: 0; }
+    .section-head { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <div class="top-bar-inner">
+    <h1>OSCE-Rotationsplan</h1>
+    <div class="sub">Objective Structured Clinical Examination</div>
+  </div>
+</div>
+
+<div class="container">
+  <div>
+    <div class="section">
+      <div class="section-head"><div class="n">1</div><h2>Einstellungen</h2></div>
+      <div class="section-body">
+        <div class="field"><label>Kursbezeichnung / Event</label><input type="text" id="kursname" value="Examenskurs 26A" placeholder="z. B. GP 2025/08B"></div>
+        <div class="field"><label>Prüfungsdatum</label><input type="date" id="datum"></div>
+        <div class="row2">
+          <div class="field half"><label>Startzeit</label><input type="time" id="startzeit" value="07:30"></div>
+          <div class="field half"><label>Min. pro Station</label><input type="number" id="minPro" value="15" min="5" max="60" step="5"></div>
+        </div>
+        <div class="row2">
+          <div class="field half"><label>Anz. Stationen</label><input type="number" id="anzahlSt" value="8" min="2" max="16"></div>
+          <div class="field half"><label>Schüler/Gruppe</label><input type="number" id="proGruppe" value="8" min="1" max="8"><div class="hint-text" id="proGruppeHint">max. = Stationsanzahl</div></div>
+        </div>
+        <div class="field"><label>Pause zw. Gruppen (Min.)</label><input type="number" id="pause" value="15" min="0" max="60" step="5" oninput="updateAllPauses(this.value)"></div>
+      </div>
+    </div>
+    <div class="section">
+      <div class="section-head"><div class="n">2</div><h2>Schüler/innen</h2></div>
+      <div class="section-body">
+        <div class="field">
+          <label>Namen — einer pro Zeile</label>
+          <textarea id="nameInput" placeholder="Mustermann, Max&#10;Musterfrau, Maria&#10;Schmidt, Anna&#10;..."></textarea>
+          <div class="hint-text">Gruppen werden automatisch gebildet.</div>
+          <div id="studentBadge" class="student-badge" style="display:none;"><span id="studentCount">0</span> Schüler/innen</div>
+        </div>
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;text-transform:none;letter-spacing:0;color:var(--subtle);margin-bottom:10px;cursor:pointer;">
+          <input type="checkbox" id="shuffleNames" style="width:15px;height:15px;accent-color:var(--accent);flex-shrink:0;">
+          Reihenfolge zufällig mischen
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;text-transform:none;letter-spacing:0;color:var(--subtle);margin-bottom:10px;cursor:pointer;">
+          <input type="checkbox" id="evenDist" style="width:15px;height:15px;accent-color:var(--accent);flex-shrink:0;" checked>
+          Gruppen gleichmäßig verteilen
+        </label>
+        <button class="btn-primary" onclick="generatePlan()">Plan generieren</button>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="section">
+      <div class="section-head"><div class="n">3</div><h2>Vorschau &amp; Export</h2></div>
+      <div class="section-body">
+        <div id="metaInfo" class="meta-info"></div>
+        <div id="previewArea"><div class="empty-state"><p>Einstellungen ausfüllen und Plan generieren.</p></div></div>
+        <button class="btn-export" id="exportBtn" disabled onclick="exportWord()">Rotationsplan exportieren</button>
+        <button class="btn-export-sec" id="exportPrueferBtn" disabled onclick="exportPruefer()">Prüfer-Listen exportieren</button>
+        <button class="btn-export-sec" id="exportSchilderBtn" disabled onclick="exportSchilder()">Stationsschilder exportieren</button>
+        <div id="exportStatus" class="export-status"></div>
+
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.getElementById('datum').valueAsDate = new Date();
+
+function syncProGruppeMax() {
+  const anzSt = parseInt(document.getElementById('anzahlSt').value) || 8;
+  const proGruppeEl = document.getElementById('proGruppe');
+  proGruppeEl.max = anzSt;
+  if (parseInt(proGruppeEl.value) > anzSt) proGruppeEl.value = anzSt;
+  document.getElementById('proGruppeHint').textContent = '≤ Stationsanzahl (' + anzSt + ')';
+}
+document.getElementById('anzahlSt').addEventListener('input', syncProGruppeMax);
+syncProGruppeMax();
+document.getElementById('nameInput').addEventListener('input', () => {
+  const n = getNames().length;
+  document.getElementById('studentBadge').style.display = n ? 'inline-flex' : 'none';
+  document.getElementById('studentCount').textContent = n;
+});
+
+let planData = null;
+function getNames() { return document.getElementById('nameInput').value.split('\n').map(s=>s.trim()).filter(Boolean); }
+function p2(n) { return String(n).padStart(2,'0'); }
+function ft(m) { return p2(Math.floor(m/60))+':'+p2(m%60); }
+function toMin(t) { const [h,m]=t.split(':').map(Number); return h*60+m; }
+function fmtDate(s) { if(!s)return''; return new Date(s).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'}); }
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function escX(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function shuffle(arr) {
+  // Fisher-Yates
+  const a = [...arr];
+  for (let i=a.length-1;i>0;i--) { const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
+  return a;
+}
+
+function buildRotation(groupSize, anzSt) {
+  // Jeder Schüler besucht alle Stationen genau einmal (soweit möglich).
+  // Wenn groupSize > anzSt: manche Stationen werden doppelt belegt.
+  // Wenn groupSize < anzSt: manche Stationen bleiben leer (wird gemeldet).
+  // Algorithmus: Latin-Square-artige Verschiebung, dann optional shuffeln.
+  const stationen = Array.from({length:anzSt},(_,i)=>i+1);
+  return Array.from({length:groupSize}, (_,pi) => {
+    // Startversatz: jeder Schüler beginnt an anderer Station
+    const offset = pi % anzSt;
+    return Array.from({length:anzSt}, (_,s) => stationen[(offset+s) % anzSt]);
+  });
+}
+
+function updateAllPauses(val) {
+  if (!planData) return;
+  const p = parseInt(val) || 0;
+  planData.pause = p;
+  planData.pauses = planData.pauses.map(() => p);
+  const startM = planData.schedule[0].gStart;
+  const {minPro, anzSt, pauses} = planData;
+  let cur = startM;
+  planData.schedule = planData.schedule.map((g, gi) => {
+    const gs = cur;
+    const slots = Array.from({length:anzSt}, (_,s) => ({start:gs+s*minPro, end:gs+(s+1)*minPro}));
+    const pauseNach = gi < pauses.length ? pauses[gi] : 0;
+    cur = gs + anzSt*minPro + pauseNach;
+    return {...g, gStart:gs, gEnd:gs+anzSt*minPro, slots, pauseNach};
+  });
+  const scrollY = window.scrollY;
+  renderPreview(planData);
+  window.scrollTo(0, scrollY);
+}
+
+function updatePause(idx, val) {
+  if (!planData) return;
+  planData.pauses[idx] = parseInt(val) || 0;
+  // Plan neu berechnen mit aktualisierten Pausen
+  const startM = planData.schedule[0].gStart;
+  const {minPro, anzSt, pauses} = planData;
+  let cur = startM;
+  planData.schedule = planData.schedule.map((g, gi) => {
+    const gs = cur;
+    const slots = Array.from({length:anzSt}, (_,s) => ({start:gs+s*minPro, end:gs+(s+1)*minPro}));
+    const pauseNach = gi < pauses.length ? pauses[gi] : 0;
+    cur = gs + anzSt*minPro + pauseNach;
+    return {...g, gStart:gs, gEnd:gs+anzSt*minPro, slots, pauseNach};
+  });
+  // Metainfo + Vorschau aktualisieren ohne scroll-jump
+  const scrollY = window.scrollY;
+  renderPreview(planData);
+  window.scrollTo(0, scrollY);
+}
+
+function generatePlan() {
+  const rawNames = getNames();
+  if (!rawNames.length) { alert('Bitte mindestens einen Namen eingeben.'); return; }
+
+  const kurs   = document.getElementById('kursname').value.trim()||'Kurs';
+  const datum  = document.getElementById('datum').value;
+  const startM = toMin(document.getElementById('startzeit').value||'07:30');
+  const minPro = parseInt(document.getElementById('minPro').value)||15;
+  const anzSt  = parseInt(document.getElementById('anzahlSt').value)||8;
+  const perGrp = parseInt(document.getElementById('proGruppe').value)||8;
+  const pause  = parseInt(document.getElementById('pause').value)||0;
+  const doShuffle = document.getElementById('shuffleNames').checked;
+  const doEvenDist = document.getElementById('evenDist').checked;
+
+  // Validierung
+  if (anzSt < 2) { alert('Mindestens 2 Stationen erforderlich.'); return; }
+  if (perGrp < 1) { alert('Mindestens 1 Schüler pro Gruppe erforderlich.'); return; }
+  if (perGrp > anzSt) {
+    alert(`Fehler: Schüler pro Gruppe (${perGrp}) darf die Stationsanzahl (${anzSt}) nicht überschreiten.\nBitte Einstellungen anpassen.`);
+    return;
+  }
+
+  // Namen ggf. mischen
+  const names = doShuffle ? shuffle(rawNames) : [...rawNames];
+
+  // Gruppen bilden
+  let groups = [];
+  if (doEvenDist) {
+    // Gleichmäßige Verteilung: Anzahl Gruppen berechnen, dann gleichmäßig aufteilen
+    const n = names.length;
+    const numGroups = Math.ceil(n / perGrp);
+    const baseSize = Math.floor(n / numGroups);
+    const remainder = n % numGroups;
+    // Erste `remainder` Gruppen bekommen baseSize+1, Rest bekommt baseSize
+    let idx = 0;
+    for (let g = 0; g < numGroups; g++) {
+      const size = g < remainder ? baseSize + 1 : baseSize;
+      groups.push(names.slice(idx, idx + size));
+      idx += size;
+    }
+  } else {
+    for (let i = 0; i < names.length; i += perGrp) groups.push(names.slice(i, i + perGrp));
+  }
+
+  // Individuelle Pausen: Standard-Pause für alle, editierbar pro Übergang
+  // pauses[i] = Pause VOR Gruppe i+1 (also zwischen Gruppe i und i+1)
+  const pauses = Array.from({length: Math.max(0, groups.length-1)}, (_, i) => {
+    const existing = planData && planData.pauses && planData.pauses[i] !== undefined
+      ? planData.pauses[i] : pause;
+    return existing;
+  });
+
+  // Rotation berechnen
+  let cur = startM;
+  const schedule = groups.map((grp, gi) => {
+    const gs = cur;
+    const slots = Array.from({length:anzSt}, (_,s) => ({start:gs+s*minPro, end:gs+(s+1)*minPro}));
+    const baseRotation = buildRotation(grp.length, anzSt);
+    const rows = grp.map((name, pi) => ({name, stations: baseRotation[pi]}));
+    const pauseNach = gi < pauses.length ? pauses[gi] : 0;
+    cur = gs + anzSt*minPro + pauseNach;
+    return {num:gi+1, gStart:gs, gEnd:gs+anzSt*minPro, slots, rows, pauseNach};
+  });
+
+
+  planData = {kurs, datum, minPro, anzSt, perGrp, pause, pauses, schedule};
+  renderPreview(planData);
+  document.getElementById('exportBtn').disabled = false;
+  document.getElementById('exportSchilderBtn').disabled = false;
+  document.getElementById('exportPrueferBtn').disabled = false;
+  document.getElementById('exportStatus').textContent = '';
+
+}
+
+function renderPreview(d) {
+  const lastGroup = d.schedule[d.schedule.length - 1];
+  const startTime = ft(d.schedule[0].gStart);
+  const endTime   = ft(lastGroup.gEnd);
+  const totalMin  = lastGroup.gEnd - d.schedule[0].gStart;
+  const totalH    = Math.floor(totalMin / 60);
+  const totalM    = totalMin % 60;
+  const dauer     = totalH > 0 ? `${totalH} Std. ${totalM} Min.` : `${totalM} Min.`;
+  document.getElementById('metaInfo').innerHTML =
+    `<strong>${esc(d.kurs)}</strong> &nbsp;·&nbsp; ${fmtDate(d.datum)}<br>` +
+    `${d.anzSt} Stationen &nbsp;·&nbsp; ${d.minPro} Min./Station &nbsp;·&nbsp; ` +
+    `${d.schedule.length} Gruppe(n) &nbsp;·&nbsp; ` +
+    `<strong>${startTime} – ${endTime}</strong> &nbsp;·&nbsp; Gesamtdauer: <strong>${dauer}</strong>`;
+  let h = '<div class="preview-wrap"><table class="pt"><thead><tr><th>Name</th><th>Gr.</th>';
+  d.schedule[0].slots.forEach(sl => { h += `<th>${ft(sl.start)}<br><span style="opacity:.65;font-size:10px">${ft(sl.end)}</span></th>`; });
+  h += '</tr></thead><tbody>';
+  d.schedule.forEach((g, gi) => {
+    // Pausenzeile zwischen Gruppen mit editierbarem Feld
+    if (gi > 0) {
+      const prevPause = d.schedule[gi-1].pauseNach;
+      const pauseStart = d.schedule[gi-1].gEnd;
+      const cols = 2 + d.anzSt;
+      h += `<tr class="pause-row"><td colspan="${cols}">`;
+      h += `<span class="pause-label">Pause:</span> `;
+      h += `<input class="pause-edit" type="number" min="0" max="120" step="5" value="${prevPause}" `;
+      h += `onchange="updatePause(${gi-1}, this.value)" style="width:54px;padding:2px 5px;border:1px solid #D1D9E0;border-radius:4px;font-size:12px;font-family:inherit;"> Min.`;
+      h += `<span class="pause-time"> &nbsp;·&nbsp; ${ft(pauseStart)} – ${ft(g.gStart)}</span>`;
+      h += `</td></tr>`;
+    }
+    const idleNote = g.rows.length < d.anzSt ? ` &nbsp;·&nbsp; <span style="color:#B45309;font-size:10px">${d.anzSt - g.rows.length} Station(en) unbelegt</span>` : '';
+    h += `<tr class="gh"><td colspan="${2+d.anzSt}">Gruppe ${g.num} &nbsp;·&nbsp; ${ft(g.gStart)} – ${ft(g.gEnd)}${idleNote}</td></tr>`;
+    g.rows.forEach(row => {
+      h += `<tr><td>${esc(row.name)}</td><td style="font-weight:700;color:var(--accent)">${g.num}</td>`;
+      row.stations.forEach(s => { h += `<td><span class="sn">${s}</span></td>`; });
+      h += '</tr>';
+    });
+  });
+  h += '</tbody></table></div>';
+  document.getElementById('previewArea').innerHTML = h;
+}
+
+function exportWord() {
+  if (!planData) return;
+  const btn=document.getElementById('exportBtn'), status=document.getElementById('exportStatus');
+  btn.disabled=true; btn.textContent='Wird erstellt…';
+  status.textContent=''; status.className='export-status';
+  try {
+    const bytes = buildDocx(planData);
+    const blob  = new Blob([bytes],{type:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});
+    const url   = URL.createObjectURL(blob);
+    const a     = document.createElement('a');
+    a.href=url; a.download=`${planData.datum||'Plan'}_OSCE_Rotationsplan_${planData.kurs.replace(/[^a-zA-Z0-9]/g,'_')}.docx`;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+    status.textContent='✓ Datei erfolgreich exportiert!'; status.className='export-status ok';
+  } catch(e) {
+    console.error(e); status.textContent='⚠ Fehler: '+e.message; status.className='export-status err';
+  } finally { btn.disabled=false; btn.textContent='Rotationsplan exportieren'; }
+}
+
+function buildDocx(d) {
+  const TW=14400, nameW=3000, grpW=580, stW=Math.floor((TW-nameW-grpW)/d.anzSt);
+  const colWidths=[nameW,grpW,...Array(d.anzSt).fill(stW)];
+
+  // tcMar child order: top, left, bottom, right  (OOXML schema requirement)
+  function tc(w,fill,pars,opts={}) {
+    const{span=null}=opts;
+    const shd=fill?`<w:shd w:val="clear" w:color="auto" w:fill="${fill}"/>`:'';
+    const sp=span?`<w:gridSpan w:val="${span}"/>`:'';
+    return `<w:tc><w:tcPr><w:tcW w:w="${w}" w:type="dxa"/>${sp}${shd}`+
+      `<w:tcMar><w:top w:type="dxa" w:w="60"/><w:left w:type="dxa" w:w="80"/>`+
+      `<w:bottom w:type="dxa" w:w="60"/><w:right w:type="dxa" w:w="80"/></w:tcMar>`+
+      `<w:vAlign w:val="center"/></w:tcPr>${pars}</w:tc>`;
+  }
+  function par(text,opts={}) {
+    const{bold=false,italic=false,color='1e293b',size=18,center=false,before=0,after=0}=opts;
+    const jc=center?'<w:jc w:val="center"/>':'', b=bold?'<w:b/>':'', i=italic?'<w:i/>':'';
+    return `<w:p><w:pPr><w:spacing w:before="${before}" w:after="${after}"/>${jc}</w:pPr>`+
+      `<w:r><w:rPr>${b}${i}<w:color w:val="${color}"/>`+
+      `<w:sz w:val="${size}"/><w:szCs w:val="${size}"/>`+
+      `<w:rFonts w:ascii="Arial" w:hAnsi="Arial"/></w:rPr>`+
+      `<w:t xml:space="preserve">${escX(text)}</w:t></w:r></w:p>`;
+  }
+
+  const gridCols=colWidths.map(w=>`<w:gridCol w:w="${w}"/>`).join('');
+  const totalStudents=d.schedule.reduce((n,g)=>n+g.rows.length,0);
+
+  // Dezente Farbpalette (analog zu "Klare Aufträge")
+  // HDR  = Kopfzeile dunkel  | HDR_TXT = Text weiß
+  // GRP  = Gruppenzeile hell | GRP_TXT = dunkelblau
+  // ST   = Stations-Zellen   | ROW_ALT = Zebrastreifen
+  // PAU  = Pausenzeile
+  const C = {
+    HDR:     '2C4A6E',  // gedämpftes Marineblau (heller als 0a365d)
+    HDR_TXT: 'FFFFFF',
+    HDR_DIM: 'AABBD0',  // abgedimmte Uhrzeit
+    GRP:     'F0F4F8',  // sehr helles Grau-Blau (fast weiß)
+    GRP_TXT: '2C4A6E',
+    ST:      'F0F4F8',  // Stations-Hintergrund
+    ST2:     'E8EEF5',  // leichter Zebrastreifen
+    ST_TXT:  '2C4A6E',
+    ROW:     'FFFFFF',
+    ROW2:    'F8FAFB',  // kaum sichtbarer Zebrastreifen
+    NAME_TXT:'374151',  // etwas heller als 1e293b
+    GRP_NUM: '2C4A6E',
+    PAU:     null,      // kein Hintergrund
+    PAU_TXT: '6B7280',  // grau, sehr dezent
+  };
+
+  let tables='';
+  // Jede Gruppe bekommt eine eigene Tabelle
+  d.schedule.forEach((g, gi) => {
+    // Kopfzeile für jede Tabelle neu
+    let rows='';
+    rows+='<w:tr>';
+    rows+=tc(nameW,C.HDR,par('Name',{bold:true,color:C.HDR_TXT,size:18}));
+    rows+=tc(grpW,C.HDR,par('Gr.',{bold:true,color:C.HDR_TXT,size:18,center:true}));
+    g.slots.forEach((sl)=>{
+      rows+=tc(stW,C.HDR,
+        par(ft(sl.start),{bold:true,color:C.HDR_TXT,size:16,center:true})+
+        par(ft(sl.end),{bold:true,color:C.HDR_DIM,size:14,center:true}));
+    });
+    rows+='</w:tr>';
+
+    // Gruppenheader-Zeile
+    const lbl=`Gruppe ${g.num}   \u00b7   ${ft(g.gStart)} \u2013 ${ft(g.gEnd)}`;
+    rows+=`<w:tr>${tc(TW,C.GRP,par(lbl,{bold:true,color:C.GRP_TXT,size:18}),{span:2+d.anzSt})}</w:tr>`;
+
+    // Schülerzeilen
+    g.rows.forEach((row,ri)=>{
+      const bgR=ri%2===0?C.ROW:C.ROW2, bgS=ri%2===0?C.ST:C.ST2;
+      rows+='<w:tr><w:trPr><w:cantSplit/></w:trPr>';
+      rows+=tc(nameW,bgR,par(row.name,{color:C.NAME_TXT,size:18}));
+      rows+=tc(grpW,bgR,par(String(g.num),{bold:true,color:C.GRP_NUM,size:18,center:true}));
+      row.stations.forEach(s=>{rows+=tc(stW,bgS,par(String(s),{bold:true,color:C.ST_TXT,size:18,center:true}));});
+      rows+='</w:tr>';
+    });
+
+
+
+    const tbl=
+      `<w:tbl><w:tblPr><w:tblStyle w:val="TableNormal"/><w:tblW w:w="${TW}" w:type="dxa"/>`+
+      `<w:tblBorders>`+
+      `<w:top w:val="single" w:color="D1D9E0" w:sz="4"/>`+
+      `<w:left w:val="single" w:color="D1D9E0" w:sz="4"/>`+
+      `<w:bottom w:val="single" w:color="D1D9E0" w:sz="4"/>`+
+      `<w:right w:val="single" w:color="D1D9E0" w:sz="4"/>`+
+      `<w:insideH w:val="single" w:color="D1D9E0" w:sz="4"/>`+
+      `<w:insideV w:val="single" w:color="D1D9E0" w:sz="4"/>`+
+      `</w:tblBorders></w:tblPr>`+
+      `<w:tblGrid>${gridCols}</w:tblGrid>${rows}</w:tbl>`;
+
+    if (gi===0) {
+      tables += tbl;
+    } else {
+      // Pausenzeile zwischen Gruppen – individuelle Pause aus vorheriger Gruppe
+      const prevG = d.schedule[gi-1];
+      const thisPause = prevG.pauseNach !== undefined ? prevG.pauseNach : d.pause;
+      const pauseLabel = thisPause > 0
+        ? `Pause: ${thisPause} Min.   \u00b7   ${ft(g.gStart - thisPause)} \u2013 ${ft(g.gStart)}`
+        : `\u00dcbergang zu Gruppe ${g.num}   \u00b7   ${ft(g.gStart)}`;
+      const pauseRow =
+        `<w:tbl><w:tblPr><w:tblStyle w:val="TableNormal"/><w:tblW w:w="${TW}" w:type="dxa"/>` +
+        `<w:tblBorders><w:top w:val="none" w:sz="0"/><w:left w:val="none" w:sz="0"/>` +
+        `<w:bottom w:val="none" w:sz="0"/><w:right w:val="none" w:sz="0"/>` +
+        `<w:insideH w:val="none" w:sz="0"/><w:insideV w:val="none" w:sz="0"/></w:tblBorders></w:tblPr>` +
+        `<w:tblGrid><w:gridCol w:w="${TW}"/></w:tblGrid>` +
+        `<w:tr><w:trPr><w:trHeight w:val="360"/></w:trPr>${tc(TW,C.PAU,par(pauseLabel,{italic:true,color:C.PAU_TXT,size:18,center:true,before:80,after:80}))}</w:tr>` +
+        `</w:tbl>`;
+      tables += pauseRow + tbl;
+    }
+  });
+
+  const docXml=
+    `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>`+
+    `<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>`+
+    `<w:p><w:pPr><w:spacing w:before="0" w:after="120"/></w:pPr>`+
+    `<w:r><w:rPr><w:b/><w:sz w:val="28"/><w:szCs w:val="28"/><w:color w:val="2C4A6E"/><w:rFonts w:ascii="Arial Narrow" w:hAnsi="Arial Narrow"/></w:rPr>`+
+    `<w:t>OSCE-Rotationsplan \u2013 Kurs ${escX(d.kurs)}</w:t></w:r></w:p>`+
+    (()=>{
+      const startTime = ft(d.schedule[0].gStart);
+      const lastG = d.schedule[d.schedule.length-1];
+      const endTime = ft(lastG.gEnd);
+      const totalMin = lastG.gEnd - d.schedule[0].gStart;
+      const totalH = Math.floor(totalMin/60);
+      const totalM = totalMin%60;
+      const dauer = totalH>0?`${totalH} Std. ${totalM} Min.`:`${totalM} Min.`;
+      const dot = ` \u00b7 `;
+      const meta = escX(fmtDate(d.datum)) + dot + d.anzSt + ` Stationen` + dot + d.minPro + ` Min./Station` + dot + d.schedule.length + ` Gruppe(n)` + dot + startTime + ` \u2013 ` + endTime + dot + `Gesamtdauer: ` + dauer;
+      return `<w:p><w:pPr><w:spacing w:before="0" w:after="120"/></w:pPr>`+
+        `<w:r><w:rPr><w:color w:val="6b7280"/><w:sz w:val="18"/><w:szCs w:val="18"/><w:rFonts w:ascii="Arial" w:hAnsi="Arial"/></w:rPr>`+
+        `<w:t>${meta}</w:t></w:r></w:p>`;
+    })()+
+    tables+
+    `<w:p/>`+
+    `<w:sectPr><w:pgSz w:w="16838" w:h="11906" w:orient="landscape"/>`+
+    `<w:pgMar w:top="720" w:right="720" w:bottom="720" w:left="720" w:header="0" w:footer="0" w:gutter="0"/>`+
+    `</w:sectPr></w:body></w:document>`;
+
+  const stylesXml=
+    `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>`+
+    `<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">`+
+    `<w:docDefaults><w:rPrDefault><w:rPr>`+
+    `<w:rFonts w:ascii="Arial" w:hAnsi="Arial"/><w:sz w:val="20"/><w:szCs w:val="20"/>`+
+    `</w:rPr></w:rPrDefault></w:docDefaults>`+
+    `<w:style w:type="table" w:styleId="TableNormal"><w:name w:val="Normal Table"/>`+
+    `<w:tblPr><w:tblCellMar>`+
+    `<w:top w:type="dxa" w:w="0"/><w:left w:type="dxa" w:w="0"/>`+
+    `<w:bottom w:type="dxa" w:w="0"/><w:right w:type="dxa" w:w="0"/>`+
+    `</w:tblCellMar></w:tblPr></w:style></w:styles>`;
+
+  return makeZip({
+    '[Content_Types].xml':
+      `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>`+
+      `<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">`+
+      `<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>`+
+      `<Default Extension="xml" ContentType="application/xml"/>`+
+      `<Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>`+
+      `<Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/>`+
+      `</Types>`,
+    '_rels/.rels':
+      `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>`+
+      `<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">`+
+      `<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>`+
+      `</Relationships>`,
+    'word/document.xml': docXml,
+    'word/styles.xml':   stylesXml,
+    'word/_rels/document.xml.rels':
+      `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>`+
+      `<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">`+
+      `<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>`+
+      `</Relationships>`,
+  });
+}
+
+// ZIP builder – getestet & validiert
+function exportSchilder() {
+  if (!planData) return;
+  const btn = document.getElementById('exportSchilderBtn');
+  const status = document.getElementById('exportStatus');
+  btn.disabled = true;
+  status.textContent = ''; status.className = 'export-status';
+  try {
+    const bytes = buildSchilderDocx(planData);
+    const blob  = new Blob([bytes], {type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});
+    const url   = URL.createObjectURL(blob);
+    const a     = document.createElement('a');
+    a.href = url;
+    a.download = `${planData.datum||'Plan'}_OSCE_Stationsschilder_${planData.kurs.replace(/[^a-zA-Z0-9]/g,'_')}.docx`;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+    status.textContent = '✓ Stationsschilder exportiert!'; status.className = 'export-status ok';
+  } catch(e) {
+    console.error(e); status.textContent = 'Fehler: ' + e.message; status.className = 'export-status err';
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function buildSchilderDocx(d) {
+  // Jede Seite: ein Schild (Querformat A4, große zentrierte Schrift)
+  // Seite 1: "Prüfung – Bitte Ruhe"
+  // Seiten 2–N: "Station 1", "Station 2", ...
+  // Seitenumbruch via sectPr zwischen Absätzen
+
+  const pgSetup =
+    '<w:pgSz w:w="16838" w:h="11906" w:orient="landscape"/>' +
+    '<w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440" w:header="0" w:footer="0" w:gutter="0"/>';
+
+  function schild(zeile1, zeile2, mitSeitenumbruch) {
+    const sz = 240; // immer 120pt
+    const brk = mitSeitenumbruch
+      ? `<w:pPr><w:sectPr>${pgSetup}</w:sectPr></w:pPr>`
+      : '';
+    // Spacer kompensiert den leeren brk-Absatz bei Seitenumbruch
+    const spacerBefore = mitSeitenumbruch ? 2600 : 2880;
+    const spacer = `<w:p><w:pPr><w:spacing w:before="${spacerBefore}" w:after="0"/></w:pPr><w:r><w:t></w:t></w:r></w:p>`;
+    const haupt =
+      `<w:p><w:pPr><w:spacing w:before="0" w:after="240"/><w:jc w:val="center"/></w:pPr>` +
+      `<w:r><w:rPr><w:b/><w:sz w:val="${sz}"/><w:szCs w:val="${sz}"/>` +
+      `<w:color w:val="2C4A6E"/><w:rFonts w:ascii="Arial Narrow" w:hAnsi="Arial Narrow"/></w:rPr>` +
+      `<w:t xml:space="preserve">${escX(zeile1)}</w:t></w:r></w:p>`;
+    const sub = zeile2
+      ? `<w:p><w:pPr><w:spacing w:before="0" w:after="0"/><w:jc w:val="center"/></w:pPr>` +
+        `<w:r><w:rPr><w:sz w:val="96"/><w:szCs w:val="96"/>` +
+        `<w:color w:val="6B7280"/><w:rFonts w:ascii="Arial" w:hAnsi="Arial"/></w:rPr>` +
+        `<w:t xml:space="preserve">${escX(zeile2)}</w:t></w:r></w:p>`
+      : '';
+    return (mitSeitenumbruch ? `<w:p>${brk}</w:p>` : '') + spacer + haupt + sub;
+  }
+
+  // Seiten aufbauen
+  let body = '';
+  // Seite 1: Ruhe-Schild (kein vorheriger Seitenumbruch)
+  body += schild('Prüfung', 'Bitte Ruhe', false);
+
+  // Zusatzschilder zuerst
+  body += schild('Pausenraum', 'Prüfer/innen', true);
+  body += schild('Aufenthalt', 'Auszubildende', true);
+
+  // Stationsschilder
+  for (let i = 1; i <= d.anzSt; i++) {
+    body += schild(`Station ${i}`, 'Eintreten erst nach Signalton', true);
+  }
+
+  const docXml =
+    '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+    '<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>' +
+    body +
+    `<w:p/><w:sectPr>${pgSetup}</w:sectPr>` +
+    '</w:body></w:document>';
+
+  const stylesXml =
+    '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+    '<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">' +
+    '<w:docDefaults><w:rPrDefault><w:rPr>' +
+    '<w:rFonts w:ascii="Arial" w:hAnsi="Arial"/><w:sz w:val="24"/><w:szCs w:val="24"/>' +
+    '</w:rPr></w:rPrDefault></w:docDefaults></w:styles>';
+
+  return makeZip({
+    '[Content_Types].xml':
+      '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+      '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">' +
+      '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>' +
+      '<Default Extension="xml" ContentType="application/xml"/>' +
+      '<Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>' +
+      '<Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/>' +
+      '</Types>',
+    '_rels/.rels':
+      '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+      '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
+      '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>' +
+      '</Relationships>',
+    'word/document.xml': docXml,
+    'word/styles.xml':   stylesXml,
+    'word/_rels/document.xml.rels':
+      '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+      '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
+      '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>' +
+      '</Relationships>',
+  });
+}
+
+function exportPruefer() {
+  if (!planData) return;
+  const btn = document.getElementById('exportPrueferBtn');
+  const status = document.getElementById('exportStatus');
+  btn.disabled = true;
+  status.textContent = ''; status.className = 'export-status';
+  try {
+    const bytes = buildPrueferDocx(planData);
+    const blob  = new Blob([bytes], {type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});
+    const url   = URL.createObjectURL(blob);
+    const a     = document.createElement('a');
+    a.href = url;
+    a.download = `${planData.datum||'Plan'}_OSCE_Prueferlisten_${planData.kurs.replace(/[^a-zA-Z0-9]/g,'_')}.docx`;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+    status.textContent = '✓ Prüfer-Listen exportiert!'; status.className = 'export-status ok';
+  } catch(e) {
+    console.error(e); status.textContent = 'Fehler: ' + e.message; status.className = 'export-status err';
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function buildPrueferDocx(d) {
+  const {anzSt, minPro, kurs, datum, schedule} = d;
+
+  // Pro Station: alle Schüler chronologisch sammeln
+  // Schüler ri in Gruppe g, Slot si (Zeitfenster) → Station (ri + si) % anzSt
+  const stationsClean = Array.from({length: anzSt}, () => []);
+  schedule.forEach(g => {
+    g.rows.forEach((row, ri) => {
+      const name = typeof row === 'object' ? row.name : row;
+      for (let si = 0; si < anzSt; si++) {
+        const stIdx = (ri + si) % anzSt;
+        const slot = g.slots[si];
+        stationsClean[stIdx].push({name, gruppe: g.num, start: slot.start, end: slot.end});
+      }
+    });
+  });
+  // Chronologisch sortieren
+  stationsClean.forEach(arr => arr.sort((a, b) => a.start - b.start || a.gruppe - b.gruppe));
+
+  function escX(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  function p2(n) { return String(n).padStart(2,'0'); }
+  function ft(m) { return p2(Math.floor(m/60))+':'+p2(m%60); }
+  function fmtDate(s) { if(!s)return''; return new Date(s).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'}); }
+
+  const HDR = '2C4A6E', HDR_TXT = 'FFFFFF', ROW = 'FFFFFF', ROW2 = 'F7F9FC';
+  const NAME_TXT = '374151', SUB_TXT = '6B7280';
+  const BORDER = 'D1D9E0';
+
+  function border() {
+    return `<w:tblBorders>`+
+      `<w:top w:val="single" w:sz="4" w:color="${BORDER}"/>`+
+      `<w:left w:val="single" w:sz="4" w:color="${BORDER}"/>`+
+      `<w:bottom w:val="single" w:sz="4" w:color="${BORDER}"/>`+
+      `<w:right w:val="single" w:sz="4" w:color="${BORDER}"/>`+
+      `<w:insideH w:val="single" w:sz="4" w:color="${BORDER}"/>`+
+      `<w:insideV w:val="single" w:sz="4" w:color="${BORDER}"/>`+
+      `</w:tblBorders>`;
+  }
+
+  function tcMar() {
+    return `<w:tcMar><w:top w:type="dxa" w:w="80"/><w:left w:type="dxa" w:w="120"/>`+
+      `<w:bottom w:type="dxa" w:w="80"/><w:right w:type="dxa" w:w="120"/></w:tcMar>`;
+  }
+
+  function par(text, opts={}) {
+    const {bold=false, color=NAME_TXT, size=20, center=false, before=0, after=0, italic=false} = opts;
+    const jc = center ? `<w:jc w:val="center"/>` : '';
+    const b = bold ? `<w:b/>` : '';
+    const it = italic ? `<w:i/>` : '';
+    return `<w:p><w:pPr><w:spacing w:before="${before}" w:after="${after}"/>${jc}</w:pPr>`+
+      `<w:r><w:rPr>${b}${it}<w:color w:val="${color}"/><w:sz w:val="${size}"/><w:szCs w:val="${size}"/>`+
+      `<w:rFonts w:ascii="Arial" w:hAnsi="Arial"/></w:rPr><w:t>${text}</w:t></w:r></w:p>`;
+  }
+
+  function parAN(text, opts={}) {
+    const {bold=false, color=HDR, size=36, before=0, after=60} = opts;
+    const b = bold ? `<w:b/>` : '';
+    return `<w:p><w:pPr><w:spacing w:before="${before}" w:after="${after}"/></w:pPr>`+
+      `<w:r><w:rPr>${b}<w:color w:val="${color}"/><w:sz w:val="${size}"/><w:szCs w:val="${size}"/>`+
+      `<w:rFonts w:ascii="Arial Narrow" w:hAnsi="Arial Narrow"/></w:rPr><w:t>${escX(text)}</w:t></w:r></w:p>`;
+  }
+
+  // Hochformat A4
+  const TW = 9638;
+  const numW = 700, timeW = 2000, grpW = 1200, nameW = TW - numW - timeW - grpW;
+
+  function hdrCell(w, text) {
+    return `<w:tc><w:tcPr><w:tcW w:w="${w}" w:type="dxa"/>`+
+      `<w:shd w:val="clear" w:color="auto" w:fill="${HDR}"/>${tcMar()}<w:vAlign w:val="center"/></w:tcPr>`+
+      par(text, {bold:true, color:HDR_TXT, size:18, before:0, after:0})+`</w:tc>`;
+  }
+
+  function dataCell(w, text, fill, opts={}) {
+    return `<w:tc><w:tcPr><w:tcW w:w="${w}" w:type="dxa"/>`+
+      `<w:shd w:val="clear" w:color="auto" w:fill="${fill}"/>${tcMar()}<w:vAlign w:val="center"/></w:tcPr>`+
+      par(text, {color:NAME_TXT, size:19, before:0, after:0, ...opts})+`</w:tc>`;
+  }
+
+  function idleRow(timeFrom, timeTo) {
+    const IDLE_BG = 'FEF3C7', IDLE_TXT = 'B45309';
+    const label = `Leerlauf: ${ft(timeFrom)} \u2013 ${ft(timeTo)}`;
+    return `<w:tr><w:trPr><w:trHeight w:val="340"/><w:cantSplit/></w:trPr>`+
+      `<w:tc><w:tcPr><w:tcW w:w="${TW}" w:type="dxa"/><w:gridSpan w:val="4"/>`+
+      `<w:shd w:val="clear" w:color="auto" w:fill="${IDLE_BG}"/>${tcMar()}<w:vAlign w:val="center"/></w:tcPr>`+
+      `<w:p><w:pPr><w:spacing w:before="30" w:after="30"/></w:pPr>`+
+      `<w:r><w:rPr><w:i/><w:color w:val="${IDLE_TXT}"/><w:sz w:val="17"/><w:szCs w:val="17"/>`+
+      `<w:rFonts w:ascii="Arial Narrow" w:hAnsi="Arial Narrow"/></w:rPr>`+
+      `<w:t>${escX(label)}</w:t></w:r></w:p></w:tc></w:tr>`;
+  }
+
+  function pauseRow(pauseMin, timeFrom, timeTo) {
+    const PAU_TXT = '6B7280';
+    const label = `Pause: ${pauseMin} Min.  (${ft(timeFrom)} \u2013 ${ft(timeTo)})`;
+    const textPar = `<w:p><w:pPr><w:spacing w:before="60" w:after="60"/></w:pPr>`+
+      `<w:r><w:rPr><w:i/><w:color w:val="${PAU_TXT}"/><w:sz w:val="17"/><w:szCs w:val="17"/>`+
+      `<w:rFonts w:ascii="Arial Narrow" w:hAnsi="Arial Narrow"/></w:rPr>`+
+      `<w:t>${escX(label)}</w:t></w:r></w:p>`;
+    return `<w:tr><w:trPr><w:trHeight w:val="360"/></w:trPr>`+
+      `<w:tc><w:tcPr><w:tcW w:w="${TW}" w:type="dxa"/><w:gridSpan w:val="4"/>`+
+      `<w:tcBorders>`+
+      `<w:top w:val="none" w:sz="0" w:color="auto"/>`+
+      `<w:left w:val="none" w:sz="0" w:color="auto"/>`+
+      `<w:bottom w:val="none" w:sz="0" w:color="auto"/>`+
+      `<w:right w:val="none" w:sz="0" w:color="auto"/>`+
+      `</w:tcBorders>`+
+      `<w:shd w:val="clear" w:color="auto" w:fill="FFFFFF"/>${tcMar()}<w:vAlign w:val="center"/>`+
+      `</w:tcPr>${textPar}</w:tc></w:tr>`;
+  }
+
+  let pages = '';
+  const dot = ' \u00b7 ';
+  const totalSt = d.schedule.length;
+  const startTime = ft(d.schedule[0].gStart);
+  const endTime = ft(d.schedule[d.schedule.length-1].gEnd);
+  const metaLine = fmtDate(datum) + dot + kurs + dot + anzSt + ' Stationen' + dot + minPro + ' Min./Station' + dot + totalSt + ' Gruppe(n)' + dot + startTime + ' \u2013 ' + endTime;
+
+  stationsClean.forEach((entries, si) => {
+    const hdrRow = `<w:tr><w:trPr><w:trHeight w:val="400"/><w:tblHeader/></w:trPr>`+
+      hdrCell(numW, '#')+
+      hdrCell(timeW, 'Uhrzeit')+
+      hdrCell(grpW, 'Gruppe')+
+      hdrCell(nameW, 'Name')+
+      `</w:tr>`;
+
+    // Datenzeilen: pro Gruppe alle Slots durchlaufen, Leerlauf/Schüler/Pause korrekt einfügen
+    let rowsHtml = '';
+    let rowNum = 0;
+
+    d.schedule.forEach((g, gi) => {
+      // Pause zwischen Gruppen
+      if (gi > 0) {
+        const prevG = d.schedule[gi-1];
+        const pauseMin = g.gStart - prevG.gEnd;
+        if (pauseMin > 0) rowsHtml += pauseRow(pauseMin, prevG.gEnd, g.gStart);
+      }
+
+      // Alle Einträge dieser Station für diese Gruppe
+      const groupEntries = entries.filter(e => e.gruppe === g.num);
+
+      // Slot für Slot durch die Gruppe: belegt oder Leerlauf
+      g.slots.forEach(slot => {
+        const match = groupEntries.find(e => e.start === slot.start);
+        if (match) {
+          const fill = rowNum % 2 === 0 ? ROW : ROW2;
+          rowsHtml += `<w:tr><w:trPr><w:trHeight w:val="380"/><w:cantSplit/></w:trPr>`+
+            dataCell(numW, String(rowNum+1), fill)+
+            dataCell(timeW, `${ft(slot.start)} \u2013 ${ft(slot.end)}`, fill)+
+            dataCell(grpW, `Gruppe ${g.num}`, fill)+
+            dataCell(nameW, match.name, fill, {bold:true})+
+            `</w:tr>`;
+          rowNum++;
+        } else {
+          rowsHtml += idleRow(slot.start, slot.end);
+        }
+      });
+    });
+
+    const tbl = `<w:tbl>`+
+      `<w:tblPr><w:tblW w:w="${TW}" w:type="dxa"/>${border()}`+
+      `<w:tblLook w:val="0000"/></w:tblPr>`+
+      `<w:tblGrid>${[numW,timeW,grpW,nameW].map(w=>`<w:gridCol w:w="${w}"/>`).join('')}</w:tblGrid>`+
+      hdrRow + rowsHtml +
+      `</w:tbl>`;
+
+    const isLast = si === anzSt - 1;
+    const stationTitle = parAN(`Station ${si+1}`, {bold:true, color:HDR, size:36, before:0, after:60});
+    const metaPar = par(escX(metaLine), {color:SUB_TXT, size:16, before:0, after:200});
+
+    const prueferLine = par('Pr\u00fcfer/in: ____________________________________', {color:SUB_TXT, size:20, before:0, after:200});
+    pages += stationTitle + metaPar + prueferLine + tbl;
+    if (!isLast) {
+      pages += `<w:p><w:r><w:br w:type="page"/></w:r></w:p>`;
+    }
+  });
+
+  const docXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>`+
+    `<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>`+
+    pages+
+    `<w:p/>`+
+    `<w:sectPr><w:pgSz w:w="11906" w:h="16838"/>`+
+    `<w:pgMar w:top="720" w:right="1134" w:bottom="720" w:left="1134" w:header="0" w:footer="0" w:gutter="0"/>`+
+    `</w:sectPr></w:body></w:document>`;
+
+  const stylesXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>`+
+    `<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">`+
+    `<w:docDefaults><w:rPrDefault><w:rPr>`+
+    `<w:rFonts w:ascii="Arial" w:hAnsi="Arial"/><w:sz w:val="20"/><w:szCs w:val="20"/>`+
+    `</w:rPr></w:rPrDefault></w:docDefaults></w:styles>`;
+
+  const enc = new TextEncoder();
+  return makeZip([
+    ['[Content_Types].xml', enc.encode(
+      `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>`+
+      `<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">`+
+      `<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>`+
+      `<Default Extension="xml" ContentType="application/xml"/>`+
+      `<Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>`+
+      `<Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/>`+
+      `</Types>`)],
+    ['_rels/.rels', enc.encode(
+      `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>`+
+      `<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">`+
+      `<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>`+
+      `</Relationships>`)],
+    ['word/document.xml', enc.encode(docXml)],
+    ['word/styles.xml', enc.encode(stylesXml)],
+    ['word/_rels/document.xml.rels', enc.encode(
+      `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>`+
+      `<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">`+
+      `<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>`+
+      `</Relationships>`)],
+  ]);
+}
+
+function makeZip(files) {
+  const enc=s=>new TextEncoder().encode(s);
+  function cat(arrs){const t=arrs.reduce((s,a)=>s+a.length,0),o=new Uint8Array(t);let p=0;for(const a of arrs){o.set(a,p);p+=a.length;}return o;}
+  function u16(n){return new Uint8Array([n&0xff,(n>>8)&0xff]);}
+  function u32(n){return new Uint8Array([n&0xff,(n>>8)&0xff,(n>>16)&0xff,(n>>24)&0xff]);}
+  function crc32(d){let c=0xFFFFFFFF;for(let i=0;i<d.length;i++){c^=d[i];for(let j=0;j<8;j++)c=(c>>>1)^((c&1)?0xEDB88320:0);}return(c^0xFFFFFFFF)>>>0;}
+
+  const parts=[],cd=[];let offset=0;
+  for(const[name,content]of Array.isArray(files)?files:Object.entries(files)){
+    const nb=enc(name),db=content instanceof Uint8Array?content:enc(content),crc=crc32(db);
+    const lh=cat([new Uint8Array([0x50,0x4b,0x03,0x04]),u16(20),u16(0),u16(0),u16(0),u16(0),u32(crc),u32(db.length),u32(db.length),u16(nb.length),u16(0),nb]);
+    parts.push(lh,db);
+    cd.push(cat([new Uint8Array([0x50,0x4b,0x01,0x02]),u16(20),u16(20),u16(0),u16(0),u16(0),u16(0),u32(crc),u32(db.length),u32(db.length),u16(nb.length),u16(0),u16(0),u16(0),u16(0),u32(0),u32(offset),nb]));
+    offset+=lh.length+db.length;
+  }
+  const cdB=cat(cd);
+  return cat([...parts,cdB,cat([new Uint8Array([0x50,0x4b,0x05,0x06]),u16(0),u16(0),u16(cd.length),u16(cd.length),u32(cdB.length),u32(offset),u16(0)])]);
+}
+</script>
+</body>
+</html>
