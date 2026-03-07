@@ -8,9 +8,9 @@
 
 Hier klicken zum Ausprobieren: [index.html](https://florianloyns.github.io/osce-planer/index.html)
 
-<img src="docs/screenshot-rotationsplan.png" alt="OSCE-Rotationsplan – Oberfläche" width="560">
+<img src="docs/screenshot-rotationsplan.png" alt="OSCE-Rotationsplan – Oberfläche" width="640">
 
-<img src="docs/screenshot-schnelles-drucken.png" alt="Vorschau – Detailansicht Rotationsplan" width="560">
+*Oberfläche: Einstellungen, Schülerliste und Vorschau mit editierbaren Pausenzeiten*
 
 ---
 
@@ -60,10 +60,14 @@ Jede Gruppe erhält eine eigene Tabelle mit Kopfzeile (Zeitfenster), Gruppenhead
 
 <img src="docs/screenshot-word-rotationsplan.png" alt="Word-Export Rotationsplan" width="560">
 
+*Word-Export: Rotationsplan im Querformat mit Gruppenübersicht und Zeitfenstern*
+
 ### Prüfer-Listen
 Pro Station eine Seite. Listet alle Prüfungszeiträume chronologisch mit Schülername, Gruppe und Uhrzeit. Leerlauf-Slots und Pausenzeiten zwischen Gruppen werden separat ausgewiesen.
 
 <img src="docs/screenshot-word-prueferlisten.jpg" alt="Word-Export Prüfer-Listen" width="560">
+
+*Word-Export: Prüfer-Liste pro Station mit chronologischem Ablauf und Leerlauf-Anzeige*
 
 ### Stationsschilder
 Je ein Schild pro Station (mit Hinweis „Eintreten erst nach Signalton") plus Zusatzschilder: „Prüfung – Bitte Ruhe", „Pausenraum – Prüfer/innen" und „Aufenthalt – Auszubildende".
