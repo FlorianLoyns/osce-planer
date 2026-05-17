@@ -45,6 +45,33 @@
     --shadow-md: 0 2px 8px rgba(0,0,0,.09);
     --radius: 10px;
   }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg:#0f172a; --muted:#1e293b; --text:#e2e8f0;
+      --subtle:#94a3b8; --border:#334155; --border-light:#1e293b;
+      --accent-light:#1e3a57; --shadow-sm:0 1px 3px rgba(0,0,0,.3);
+      --shadow-md:0 2px 8px rgba(0,0,0,.4);
+    }
+  }
+  html.dark {
+    --bg:#0f172a; --muted:#1e293b; --text:#e2e8f0;
+    --subtle:#94a3b8; --border:#334155; --border-light:#1e293b;
+    --accent-light:#1e3a57; --shadow-sm:0 1px 3px rgba(0,0,0,.3);
+    --shadow-md:0 2px 8px rgba(0,0,0,.4);
+  }
+  html.light {
+    --bg:#ffffff; --muted:#f1f5f9; --text:#1e293b;
+    --subtle:#6b7280; --border:#cbd5e1; --border-light:#e2e8f0;
+    --accent-light:#e8eef5; --shadow-sm:0 1px 3px rgba(0,0,0,.06);
+    --shadow-md:0 2px 8px rgba(0,0,0,.09);
+  }
+  .icon-btn {
+    width:38px; height:38px; border-radius:10px;
+    background:var(--muted); border:1px solid var(--border-light);
+    display:grid; place-items:center; color:var(--subtle);
+    cursor:pointer; flex-shrink:0; transition:opacity .15s;
+  }
+  .icon-btn:hover { opacity:.75; }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
@@ -53,7 +80,7 @@
   }
 
   .top-bar { background: var(--bg); border-bottom: 1px solid var(--border-light); box-shadow: var(--shadow-sm); padding: 13px 0; position: sticky; top: 0; z-index: 100; }
-  .top-bar-inner { max-width: 980px; margin: 0 auto; padding: 0 18px; }
+  .top-bar-inner { max-width: 980px; margin: 0 auto; padding: 0 18px; display:flex; align-items:center; justify-content:space-between; }
   .top-bar h1 { font-size: 20px; font-weight: 800; letter-spacing: -.3px; line-height: 1.2; }
   .top-bar .sub { font-size: 11px; font-weight: 500; color: var(--subtle); margin-top: 2px; letter-spacing: .3px; text-transform: uppercase; }
 
@@ -119,11 +146,10 @@
   .empty-state .icon { font-size: 36px; margin-bottom: 8px; }
   footer {
     max-width: 960px; margin: 20px auto 0; padding: 12px 18px;
-    border-top: 1px solid var(--border-light);
     font-size: 13px; color: var(--subtle); text-align: center;
   }
-  footer a { color: inherit; text-decoration: none; }
-  footer a:hover { text-decoration: underline; }
+  footer a { color: inherit; text-decoration: none; transition: opacity .15s; }
+  footer a:hover { opacity: .65; }
   @media print {
     .top-bar, .container > div:first-child,
     .btn-export, .btn-export-sec, .btn-primary,
@@ -140,8 +166,14 @@
 
 <div class="top-bar">
   <div class="top-bar-inner">
-    <h1>OSCE-Rotationsplan</h1>
-    <div class="sub">Objective Structured Clinical Examination</div>
+    <div>
+      <h1>OSCE-Rotationsplan</h1>
+      <div class="sub">Objective Structured Clinical Examination</div>
+    </div>
+    <button class="icon-btn" id="theme-btn" aria-label="Farbschema umschalten">
+      <svg id="theme-icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+      <svg id="theme-icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    </button>
   </div>
 </div>
 
@@ -958,6 +990,28 @@ function makeZip(files) {
   const cdB=cat(cd);
   return cat([...parts,cdB,cat([new Uint8Array([0x50,0x4b,0x05,0x06]),u16(0),u16(0),u16(cd.length),u16(cd.length),u32(cdB.length),u32(offset),u16(0)])]);
 }
+
+// Theme toggle
+(function() {
+  function syncThemeIcon() {
+    var isDark = document.documentElement.classList.contains('dark') ||
+      (!document.documentElement.classList.contains('light') && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    document.getElementById('theme-icon-sun').style.display = isDark ? 'block' : 'none';
+    document.getElementById('theme-icon-moon').style.display = isDark ? 'none' : 'block';
+  }
+  try { var s = localStorage.getItem('theme'); if (s) document.documentElement.classList.add(s); } catch(e){}
+  syncThemeIcon();
+  document.getElementById('theme-btn').addEventListener('click', function() {
+    var html = document.documentElement;
+    var isDark = html.classList.contains('dark') ||
+      (!html.classList.contains('light') && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    html.classList.remove('dark', 'light');
+    html.classList.add(isDark ? 'light' : 'dark');
+    try { localStorage.setItem('theme', isDark ? 'light' : 'dark'); } catch(e){}
+    syncThemeIcon();
+  });
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', syncThemeIcon);
+})();
 </script>
 
 <footer>
